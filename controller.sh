@@ -19,8 +19,7 @@ while true; do
         build)
             echo "Starting the build process inside Docker container..."
             if [[ -f "main.c" ]]; then
-                # Ensure the gcc command knows where the header is
-                gcc -o main main.c -lm -I./dimanet
+                gcc -o main main.c -I./dimanet -lm 
                 if [[ $? -ne 0 ]]; then
                     echo "Compilation failed."
                     exit 1
@@ -30,6 +29,7 @@ while true; do
                 exit 1
             fi
             ;;
+
         pull)
             echo "Pulling latest changes from git and docker-compose..."
             git pull
@@ -46,7 +46,7 @@ while true; do
         run)
             echo "Running the neural network..."
             if [[ -f "./main" ]]; then
-                ./main  # Run the compiled executable
+                ./main 
             else
                 echo "Executable not found. Make sure the build step was successful."
                 exit 1
