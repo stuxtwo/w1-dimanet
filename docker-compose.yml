@@ -1,9 +1,9 @@
-version: '3'
+version: '3.8'
 services:
   w1-dimanet:
-    build: .
+    build:
+      context: .
     container_name: w1-dimanet
     volumes:
       - .:/app
-    working_dir: /app
     command: bash
