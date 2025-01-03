@@ -1,4 +1,4 @@
-# version: '3.8' disabled this parameter, this is now obselete.
+# version: '3.8' isabled this parameter, this is now obselete.
 
 services:
   w1-dimanet:
@@ -7,4 +7,4 @@ services:
     container_name: w1-dimanet
     volumes:
       - .:/app
-    command: bash -c "while true; do sleep 1000; done"
+    command: bash -c "while true; do sleep 1000; done"  # Keep the container running

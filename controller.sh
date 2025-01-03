@@ -13,8 +13,9 @@ while true; do
             ;;
         up)
             echo "Starting Docker containers with docker-compose up..."
-            docker-compose up
+            docker-compose up -d
             ;;
+
         build)
             echo "Starting the build process inside Docker container..."
             if [[ -f "main.c" ]]; then
