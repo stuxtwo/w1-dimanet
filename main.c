@@ -1,42 +1,77 @@
 #include "dimanet.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
-#define INPUT_SIZE 2
-#define HIDDEN_LAYERS 1
-#define HIDDEN_NEURONS 3
-#define OUTPUT_SIZE 1
+// Define model hyperparameters
+#define INPUT_SIZE 64
+#define HIDDEN_SIZE 128
+#define OUTPUT_SIZE 10
+#define BATCH_SIZE 32
+#define LEARNING_RATE 0.001
+#define EPOCHS 10
 
-// Simple activation functions (we'll use the provided ones)
-double activation_function(const dimanet *ann, double input) {
-    return dimanet_act_sigmoid(ann, input);
+// Forward pass function with a mixture of experts (MoE)
+void forward_pass_with_moe(DimanetLayer *layer, float *input, float *output) {
+    // Simplified MoE: route input through a random subset of experts
+    // In this example, we just choose one expert (layer) to process the input
+    if (rand() % 2 == 0) {
+        dimanet_run(layer, input, output);  // Normal processing
+    } else {
+        dimanet_run(layer, input, output);  // Another expert layer can be chosen in advanced models
+    }
 }
 
+// Training loop with early exit (CALM)
+void train(Dimanet *network, float *train_data, float *train_labels) {
+    for (int epoch = 0; epoch < EPOCHS; epoch++) {
+        float loss = 0.0;
+        for (int i = 0; i < BATCH_SIZE; i++) {
+            // Perform forward pass with early exit
+            float output[OUTPUT_SIZE];
+            forward_pass_with_moe(network->layers[0], train_data, output);
+
+            // Calculate loss (simple MSE for example)
+            loss = 0.0;
+            for (int j = 0; j < OUTPUT_SIZE; j++) {
+                float error = train_labels[i * OUTPUT_SIZE + j] - output[j];
+                loss += error * error;
+            }
+
+            // Backpropagate loss
+            dimanet_train(network, loss, LEARNING_RATE);
+
+            // Early exit based on some criteria (loss threshold, epoch, etc.)
+            if (loss < 0.01) {
+                printf("Early exit at epoch %d\n", epoch);
+                break;
+            }
+        }
+
+        printf("Epoch %d, Loss: %f\n", epoch, loss);
+    }
+}
+
+// Main function to initialize and train the model
 int main() {
-    // Create a new neural network with 2 inputs, 1 hidden layer with 3 neurons, and 1 output.
-    dimanet *ann = dimanet_init(INPUT_SIZE, HIDDEN_LAYERS, HIDDEN_NEURONS, OUTPUT_SIZE);
+    // Initialize a Dimanet model (simplified)
+    Dimanet network;
+    dimanet_init(&network);
 
-    // Randomize weights
-    dimanet_randomize(ann);
+    // Define some example training data
+    float train_data[BATCH_SIZE * INPUT_SIZE];   // Input data
+    float train_labels[BATCH_SIZE * OUTPUT_SIZE]; // Labels for supervised training
 
-    // Example input and expected output for training
-    double input[] = {0.1, 0.9}; // Example input for the neural network
-    double output[] = {0.0}; // Expected output after training
+    // Fill the training data with random values (this should be your actual dataset)
+    for (int i = 0; i < BATCH_SIZE * INPUT_SIZE; i++) {
+        train_data[i] = (float)rand() / (float)RAND_MAX;
+    }
+    for (int i = 0; i < BATCH_SIZE * OUTPUT_SIZE; i++) {
+        train_labels[i] = (float)rand() / (float)RAND_MAX;
+    }
 
-    // Run the network
-    double const *result = dimanet_run(ann, input);
-    printf("Output before training: %f\n", result[0]);
-
-    // Train the network
-    double learning_rate = 0.1;
-    dimanet_train(ann, input, output, learning_rate);
-
-    // Run the network again after training
-    result = dimanet_run(ann, input);
-    printf("Output after training: %f\n", result[0]);
-
-    // Free the memory used by the neural network
-    dimanet_free(ann);
+    // Train the model
+    train(&network, train_data, train_labels);
 
     return 0;
 }
