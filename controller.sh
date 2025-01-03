@@ -17,19 +17,9 @@ while true; do
             ;;
 
         build)
-            echo "Starting the build process inside Docker container..."
-            if [[ -f "main.c" ]]; then
-                gcc -o main main.c -I./dimanet -lm 
-                if [[ $? -ne 0 ]]; then
-                    echo "Compilation failed."
-                    exit 1
-                fi
-            else
-                echo "main.c not found!"
-                exit 1
-            fi
+            echo "Building the project using Makefile..."
+            make
             ;;
-
         pull)
             echo "Pulling latest changes from git and docker-compose..."
             git pull
