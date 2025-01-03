@@ -15,9 +15,9 @@ while true; do
             echo "Starting Docker containers with docker-compose up..."
             docker-compose up --build -d  # Build and start the container in detached mode
             ;;
-        build)
+       build)
             echo "Starting the build process inside Docker container..."
-            docker-compose exec w1-dimanet bash -c "gcc -o main main.c -lm && echo 'Build completed.'"
+            docker-compose exec w1-dimanet bash -c "gcc -I/app -o main main.c -lm && echo 'Build completed.'"
             ;;
         pull)
             echo "Pulling latest changes from git and docker-compose..."
