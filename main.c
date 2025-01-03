@@ -12,24 +12,19 @@
 #define EPOCHS 10
 
 // Forward pass function with a mixture of experts (MoE)
-void forward_pass_with_moe(DimanetLayer *layer, float *input, float *output) {
-    // Simplified MoE: route input through a random subset of experts
-    // In this example, we just choose one expert (layer) to process the input
-    if (rand() % 2 == 0) {
-        dimanet_run(layer, input, output);  // Normal processing
-    } else {
-        dimanet_run(layer, input, output);  // Another expert layer can be chosen in advanced models
-    }
+void forward_pass_with_moe(dimanet *network, float *input, float *output) {
+    // Simple MoE: use network's forward pass function
+    dimanet_run(network, input, output);
 }
 
 // Training loop with early exit (CALM)
-void train(Dimanet *network, float *train_data, float *train_labels) {
+void train(dimanet *network, float *train_data, float *train_labels) {
     for (int epoch = 0; epoch < EPOCHS; epoch++) {
         float loss = 0.0;
         for (int i = 0; i < BATCH_SIZE; i++) {
             // Perform forward pass with early exit
             float output[OUTPUT_SIZE];
-            forward_pass_with_moe(network->layers[0], train_data, output);
+            forward_pass_with_moe(network, train_data + i * INPUT_SIZE, output);
 
             // Calculate loss (simple MSE for example)
             loss = 0.0;
@@ -39,7 +34,7 @@ void train(Dimanet *network, float *train_data, float *train_labels) {
             }
 
             // Backpropagate loss
-            dimanet_train(network, loss, LEARNING_RATE);
+            dimanet_backpropagate(network, train_data + i * INPUT_SIZE, train_labels + i * OUTPUT_SIZE, LEARNING_RATE);
 
             // Early exit based on some criteria (loss threshold, epoch, etc.)
             if (loss < 0.01) {
@@ -54,9 +49,8 @@ void train(Dimanet *network, float *train_data, float *train_labels) {
 
 // Main function to initialize and train the model
 int main() {
-    // Initialize a Dimanet model (simplified)
-    Dimanet network;
-    dimanet_init(&network);
+    // Initialize a Dimanet model
+    dimanet *network = dimanet_init(INPUT_SIZE, 3, HIDDEN_SIZE, OUTPUT_SIZE);  // 3 hidden layers
 
     // Define some example training data
     float train_data[BATCH_SIZE * INPUT_SIZE];   // Input data
@@ -71,7 +65,7 @@ int main() {
     }
 
     // Train the model
-    train(&network, train_data, train_labels);
+    train(network, train_data, train_labels);
 
     return 0;
 }
