@@ -13,28 +13,11 @@ while true; do
             ;;
         up)
             echo "Starting Docker containers with docker-compose up..."
-            docker-compose up -d  # Start containers in detached mode
+            docker-compose up --build -d  # Build and start the container in detached mode
             ;;
         build)
             echo "Starting the build process inside Docker container..."
-
-            # Make sure the container is running first
-            container_id=$(docker ps -q --filter "name=$IMAGE_NAME")
-            if [ -z "$container_id" ]; then
-                echo "No running container found. Please start the container first with 'up'."
-                exit 1
-            fi
-
-            # Copy the source files into the container
-            docker cp . "$container_id":/app
-
-            # Build the main.c inside the container
-            docker exec "$container_id" bash -c "gcc -o /app/main /app/main.c -lm"
-
-            if [ $? -ne 0 ]; then
-                echo "Compilation failed inside the Docker container."
-                exit 1
-            fi
+            docker-compose exec w1-dimanet bash -c "gcc -o main main.c -lm && echo 'Build completed.'"
             ;;
         pull)
             echo "Pulling latest changes from git and docker-compose..."
@@ -47,19 +30,11 @@ while true; do
             ;;
         train)
             echo "Training the neural network..."
-            docker exec "$container_id" bash -c "./dimanet train_data.txt model_save"
+            docker-compose exec w1-dimanet bash -c "./dimanet train_data.txt model_save"
             ;;
         run)
             echo "Running the neural network..."
-
-            # Ensure the container is running
-            if [ -z "$container_id" ]; then
-                echo "No running container found. Please start the container first with 'up'."
-                exit 1
-            fi
-
-            # Run the compiled executable inside the container
-            docker exec "$container_id" bash -c "/app/main"
+            docker-compose exec w1-dimanet bash -c "./main"  # Run the compiled main.c file inside the container
             ;;
         exit)
             echo "Exiting..."

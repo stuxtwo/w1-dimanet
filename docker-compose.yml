@@ -1,9 +1,10 @@
 version: '3.8'
+
 services:
   w1-dimanet:
     build:
       context: .
     container_name: w1-dimanet
     volumes:
-      - .:/app
-    command: bash
+      - .:/app  # Mount the current directory to /app inside the container
+    command: bash -c "while true; do sleep 1000; done"  # Keep the container running
