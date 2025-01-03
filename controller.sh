@@ -13,11 +13,21 @@ while true; do
             ;;
         up)
             echo "Starting Docker containers with docker-compose up..."
-            docker-compose up --build -d  # Build and start the container in detached mode
+            docker-compose up
             ;;
-       build)
+        build)
             echo "Starting the build process inside Docker container..."
-            docker-compose exec w1-dimanet bash -c "gcc -I/app -o main main.c -lm && echo 'Build completed.'"
+            if [[ -f "main.c" ]]; then
+                # Ensure the gcc command knows where the header is
+                gcc -o main main.c -lm -I./dimanet
+                if [[ $? -ne 0 ]]; then
+                    echo "Compilation failed."
+                    exit 1
+                fi
+            else
+                echo "main.c not found!"
+                exit 1
+            fi
             ;;
         pull)
             echo "Pulling latest changes from git and docker-compose..."
@@ -30,11 +40,16 @@ while true; do
             ;;
         train)
             echo "Training the neural network..."
-            docker-compose exec w1-dimanet bash -c "./dimanet train_data.txt model_save"
+            ./dimanet train_data.txt model_save
             ;;
         run)
             echo "Running the neural network..."
-            docker-compose exec w1-dimanet bash -c "./main"  # Run the compiled main.c file inside the container
+            if [[ -f "./main" ]]; then
+                ./main  # Run the compiled executable
+            else
+                echo "Executable not found. Make sure the build step was successful."
+                exit 1
+            fi
             ;;
         exit)
             echo "Exiting..."
