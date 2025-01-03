@@ -19,14 +19,15 @@ while true; do
             echo "Starting Docker containers with docker-compose up --build..."
             if [[ -f "main.c" ]]; then
                 gcc -o main main.c -lm
-                    if [[ $? -ne 0 ]]; then
+                if [[ $? -ne 0 ]]; then
                     echo "Compilation failed."
-                exit 1
+                    exit 1
                 fi
             else
                 echo "main.c not found!"
                 exit 1
             fi
+            ;;
         pull)
             echo "Pulling latest changes from git and docker-compose..."
             git pull
